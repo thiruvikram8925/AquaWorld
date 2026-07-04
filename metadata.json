@@ -1,0 +1,6 @@
+{
+  "name": "Aqua World",
+  "description": "A premium, modern web application for Aqua World, specializing in state-of-the-art water purifiers, filtration solutions, and drinking water technology.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
