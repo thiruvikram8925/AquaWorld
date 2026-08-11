@@ -20,6 +20,20 @@ export const ShopView: React.FC<ShopViewProps> = ({
   initialCategoryFilter = null,
   onResetCategoryFilter,
 }) => {
+  // --- Products State (Live Sync from Backend API) ---
+  const [productsList, setProductsList] = useState<Product[]>(getAdminProducts());
+
+  useEffect(() => {
+    fetch('/api/products')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data) && data.length > 0) {
+          setProductsList(data);
+        }
+      })
+      .catch(console.error);
+  }, []);
+
   // --- Filter State ---
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -103,7 +117,7 @@ export const ShopView: React.FC<ShopViewProps> = ({
 
   // --- Filtering & Sorting Logic ---
   const filteredProducts = useMemo(() => {
-    return getAdminProducts().filter((prod) => {
+    return productsList.filter((prod) => {
       // Hide disabled products
       if ((prod as any).isEnabled === false) {
         return false;
@@ -122,40 +136,56 @@ export const ShopView: React.FC<ShopViewProps> = ({
 
       // 2. Initial Category Filter (from homepage navigation)
       if (initialCategoryFilter) {
-        // Map category title to product tech/type
         const cat = initialCategoryFilter.toLowerCase();
-        if (cat.includes('ro') && !prod.technology.includes('RO')) return false;
-        if (cat.includes('uv') && !prod.technology.includes('UV')) return false;
-        if (cat.includes('uf') && !prod.technology.includes('UF') && prod.technology !== 'UF') return false;
-        if (cat.includes('commercial') && prod.name !== 'Aqua Commerce 50') return false;
-        if (cat.includes('domestic') && prod.name === 'Aqua Commerce 50') return false;
+        const prodTech = (prod.technology || '').toLowerCase();
+        const prodName = (prod.name || '').toLowerCase();
+        const prodCap = (prod.capacity || '').toLowerCase();
+
+        if (cat.includes('ro') && !prodTech.includes('ro')) return false;
+        if (cat.includes('uv') && !prodTech.includes('uv')) return false;
+        if (cat.includes('uf') && !prodTech.includes('uf')) return false;
+        if (cat.includes('commercial') && !(prodCap.includes('50') || prodCap.includes('250') || prodName.includes('commercial') || prodName.includes('commerce') || prodName.includes('plant'))) return false;
+        if (cat.includes('domestic') && (prodCap.includes('50') || prodCap.includes('250') || prodName.includes('commercial') || prodName.includes('commerce'))) return false;
       }
 
       // 4. Color filter
       if (selectedColors.length > 0) {
-        const prodColors = (prod.color || '').split(',').map(c => c.trim().toLowerCase());
+        const prodColors = (prod.color || '').toLowerCase();
         const hasMatch = selectedColors.some(sc => prodColors.includes(sc.toLowerCase()));
         if (!hasMatch) return false;
       }
 
       // 5. Brand filter
-      if (selectedBrands.length > 0 && !selectedBrands.includes(prod.brand)) {
-        return false;
+      if (selectedBrands.length > 0) {
+        const prodBrand = (prod.brand || '').toLowerCase();
+        const hasMatch = selectedBrands.some(sb => prodBrand.includes(sb.toLowerCase()));
+        if (!hasMatch) return false;
       }
 
       // 6. Tech filter
-      if (selectedTechs.length > 0 && !selectedTechs.includes(prod.technology)) {
-        return false;
+      if (selectedTechs.length > 0) {
+        const prodTech = (prod.technology || '').toLowerCase();
+        const hasMatch = selectedTechs.some(st => prodTech.includes(st.toLowerCase()));
+        if (!hasMatch) return false;
       }
 
-      // 7. Capacity filter
-      if (selectedCapacities.length > 0 && !selectedCapacities.includes(prod.capacity)) {
-        return false;
+      // 7. Capacity filter (smart number & string match)
+      if (selectedCapacities.length > 0) {
+        const prodCap = (prod.capacity || '').toLowerCase();
+        const prodCapNum = prodCap.replace(/\D/g, '');
+        const hasMatch = selectedCapacities.some(sc => {
+          const scNum = sc.replace(/\D/g, '');
+          if (scNum && prodCapNum && scNum === prodCapNum) return true;
+          return prodCap.includes(sc.toLowerCase());
+        });
+        if (!hasMatch) return false;
       }
 
       // 8. Installation Type filter
-      if (selectedInstalls.length > 0 && !selectedInstalls.includes(prod.installationType)) {
-        return false;
+      if (selectedInstalls.length > 0) {
+        const prodInst = (prod.installationType || '').toLowerCase();
+        const hasMatch = selectedInstalls.some(si => prodInst.includes(si.toLowerCase()));
+        if (!hasMatch) return false;
       }
 
       return true;
@@ -163,7 +193,7 @@ export const ShopView: React.FC<ShopViewProps> = ({
       // 9. Sorting
       switch (sortBy) {
         case 'highest-rated':
-          return b.rating - a.rating;
+          return (b.rating || 0) - (a.rating || 0);
         case 'new-arrivals':
           return (b.isNewArrival ? 1 : 0) - (a.isNewArrival ? 1 : 0);
         case 'price-low':
@@ -176,9 +206,9 @@ export const ShopView: React.FC<ShopViewProps> = ({
       }
     });
   }, [
+    productsList,
     searchQuery,
     initialCategoryFilter,
-
     selectedColors,
     selectedBrands,
     selectedTechs,
@@ -187,8 +217,12 @@ export const ShopView: React.FC<ShopViewProps> = ({
     sortBy
   ]);
 
-  const capacitiesList = Array.from(new Set(getAdminProducts().map(p => p.capacity).filter(Boolean)));
-  const installationsList: Product['installationType'][] = ['Wall Mounted', 'Dispatch'];
+  // Standard Normalized Filter Choices
+  const techFilterList = ['RO', 'UV', 'UF', 'RO + UV', 'RO + UV + UF'];
+  const capacitiesFilterList = ['7L', '8L', '9L', '12L', '15L', '25L', '50L', '250L'];
+  const brandsFilterList = ['Aqua World', 'Kent', 'Livpure', 'Aquaguard'];
+  const colorsFilterList = ['Black', 'White', 'Silver', 'Blue', 'Copper'];
+  const installationsList = ['Wall Mounted', 'Dispatch', 'Commercial Skid'];
 
   return (
     <div className="bg-transparent min-h-screen py-10 px-4 sm:px-6 lg:px-8">
@@ -255,11 +289,29 @@ export const ShopView: React.FC<ShopViewProps> = ({
               </button>
             </div>
 
-            {/* 2. Storage Capacity Filter */}
+            {/* 1. Technology Filter */}
             <div className="space-y-2">
+              <span className="text-xs font-sans font-bold text-[#023E8A] uppercase tracking-wider block">Purification Technology</span>
+              <div className="space-y-1.5">
+                {techFilterList.map((tech) => (
+                  <label key={tech} className="flex items-center gap-2.5 text-sm font-sans text-slate-600 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={selectedTechs.includes(tech)}
+                      onChange={() => handleTechToggle(tech)}
+                      className="rounded border-slate-300 text-[#00B4D8] focus:ring-[#00B4D8] cursor-pointer w-4 h-4"
+                    />
+                    <span className="font-medium text-[#023E8A]/85">{tech}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* 2. Storage Capacity Filter */}
+            <div className="space-y-2 border-t border-slate-100 pt-4">
               <span className="text-xs font-sans font-bold text-[#023E8A] uppercase tracking-wider block">Storage Capacity</span>
               <div className="space-y-1.5">
-                {capacitiesList.map((cap) => (
+                {capacitiesFilterList.map((cap) => (
                   <label key={cap} className="flex items-center gap-2.5 text-sm font-sans text-slate-600 cursor-pointer select-none">
                     <input
                       type="checkbox"
@@ -267,14 +319,14 @@ export const ShopView: React.FC<ShopViewProps> = ({
                       onChange={() => handleCapacityToggle(cap)}
                       className="rounded border-slate-300 text-[#00B4D8] focus:ring-[#00B4D8] cursor-pointer w-4 h-4"
                     />
-                    <span className="font-medium text-[#023E8A]/85">{cap}</span>
+                    <span className="font-medium text-[#023E8A]/85">{cap} Litres</span>
                   </label>
                 ))}
               </div>
             </div>
 
-            {/* 3. Installation Type */}
-            <div className="space-y-2">
+            {/* 3. Installation Placement Filter */}
+            <div className="space-y-2 border-t border-slate-100 pt-4">
               <span className="text-xs font-sans font-bold text-[#023E8A] uppercase tracking-wider block">Installation Placement</span>
               <div className="space-y-1.5">
                 {installationsList.map((inst) => (
@@ -395,7 +447,7 @@ export const ShopView: React.FC<ShopViewProps> = ({
 
                       {/* Bullet Specifications */}
                       <ul className="space-y-1 mb-4">
-                        {prod.features.slice(0, 3).map((feat, idx) => (
+                        {(prod.features || []).slice(0, 3).map((feat, idx) => (
                           <li key={idx} className="flex items-center gap-1.5 text-[10px] font-sans text-slate-500 font-medium">
                             <span className="w-1 h-1 rounded-full bg-[#00B4D8]" />
                             {feat}
@@ -408,8 +460,10 @@ export const ShopView: React.FC<ShopViewProps> = ({
                     <div className="border-t border-slate-100 pt-4 mt-2">
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex flex-col">
-                          <span className="text-[9px] font-sans text-slate-400 line-through">₹{prod.originalPrice.toLocaleString('en-IN')}</span>
-                          <span className="text-base font-display font-bold text-[#023E8A]">₹{prod.price.toLocaleString('en-IN')}</span>
+                          {prod.originalPrice ? (
+                            <span className="text-[9px] font-sans text-slate-400 line-through">₹{(prod.originalPrice || 0).toLocaleString('en-IN')}</span>
+                          ) : null}
+                          <span className="text-base font-display font-bold text-[#023E8A]">₹{(prod.price || 0).toLocaleString('en-IN')}</span>
                         </div>
                         <button
                           onClick={() => toggleWishlist(prod.id, prod.name)}

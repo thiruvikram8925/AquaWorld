@@ -43,10 +43,6 @@ export const Header: React.FC<HeaderProps> = ({
     { id: 'contact', label: 'Contact' },
   ];
 
-  if (isAdminLoggedIn) {
-    navItems.push({ id: 'admin', label: 'Admin Panel' });
-  }
-
   const handleNavClick = (id: string) => {
     setActivePage(id);
     setIsOpen(false);
@@ -100,21 +96,14 @@ export const Header: React.FC<HeaderProps> = ({
             <div className="flex items-center gap-4">
               {/* Customer Account Portal Button */}
               <button
-                onClick={() => handleNavClick(isAdminLoggedIn ? 'admin' : 'login')}
+                onClick={() => handleNavClick('login')}
                 className={`flex items-center gap-2 px-3.5 py-2.5 rounded-full border transition-all cursor-pointer text-xs font-bold uppercase tracking-wider ${
-                  activePage === 'login' || activePage === 'admin'
+                  activePage === 'login'
                     ? 'border-[#00B4D8] bg-[#00B4D8]/10 text-[#00B4D8]'
                     : 'border-slate-200 hover:border-[#00B4D8] hover:bg-blue-50 text-slate-700 hover:text-[#00B4D8]'
                 }`}
               >
-                {isAdminLoggedIn ? (
-                  <>
-                    <div className="w-5 h-5 rounded-full bg-amber-500 text-white flex items-center justify-center font-bold text-[10px]">
-                      A
-                    </div>
-                    <span className="hidden sm:inline max-w-[80px] truncate text-slate-700">Admin</span>
-                  </>
-                ) : customerUser ? (
+                {customerUser ? (
                   <>
                     <div className="w-5 h-5 rounded-full bg-[#00B4D8] text-white flex items-center justify-center font-bold text-[10px]">
                       {customerUser.name.charAt(0)}
@@ -195,21 +184,14 @@ export const Header: React.FC<HeaderProps> = ({
                 
                 {/* Mobile Log In / Account link */}
                 <button
-                  onClick={() => handleNavClick(isAdminLoggedIn ? 'admin' : 'login')}
+                  onClick={() => handleNavClick('login')}
                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium tracking-wide transition-all ${
-                    activePage === 'login' || activePage === 'admin'
+                    activePage === 'login'
                       ? 'bg-blue-50 text-[#00B4D8] font-bold'
                       : 'text-slate-600 hover:bg-slate-50 hover:text-[#00B4D8]'
                   }`}
                 >
-                  {isAdminLoggedIn ? (
-                    <>
-                      <div className="w-6 h-6 rounded-full bg-amber-500 text-white flex items-center justify-center font-bold text-xs">
-                        A
-                      </div>
-                      <span>Admin Panel</span>
-                    </>
-                  ) : customerUser ? (
+                  {customerUser ? (
                     <>
                       <div className="w-6 h-6 rounded-full bg-[#00B4D8] text-white flex items-center justify-center font-bold text-xs">
                         {customerUser.name.charAt(0)}

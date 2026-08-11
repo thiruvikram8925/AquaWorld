@@ -5,14 +5,14 @@ import { HomeView } from './components/HomeView';
 import { ShopView } from './components/ShopView';
 import { AboutView } from './components/AboutView';
 import { ContactView } from './components/ContactView';
-import { AdminPanel } from './components/AdminPanel';
 import { LoginView } from './components/LoginView';
 import { QuickViewModal } from './components/QuickViewModal';
 import { CartDrawer } from './components/CartDrawer';
+import { WhatsAppButton } from './components/WhatsAppButton';
 import { Product, CartItem } from './types';
 import { motion, AnimatePresence } from 'motion/react';
 import { CheckCircle2 } from 'lucide-react';
-import { isAdminAuthenticated, getCustomerUser } from './lib/adminState';
+import { getCustomerUser } from './lib/adminState';
 
 export default function App() {
   const [activePage, setActivePage] = useState<string>('home');
@@ -21,18 +21,7 @@ export default function App() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
   const [showToast, setShowToast] = useState<string | null>(null);
-  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(isAdminAuthenticated());
   const [customerUser, setCustomerUser] = useState(getCustomerUser());
-  const [contentTrigger, setContentTrigger] = useState(0);
-
-  // Listen to admin auth changes dynamically
-  useEffect(() => {
-    const handleAuthChange = () => {
-      setIsAdminLoggedIn(isAdminAuthenticated());
-    };
-    window.addEventListener('admin-auth-change', handleAuthChange);
-    return () => window.removeEventListener('admin-auth-change', handleAuthChange);
-  }, []);
 
   // Listen to customer auth changes dynamically
   useEffect(() => {
@@ -47,14 +36,9 @@ export default function App() {
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash.replace('#', '');
-      const validPages = ['home', 'shop', 'about', 'contact', 'admin', 'login'];
+      const validPages = ['home', 'shop', 'about', 'contact', 'login'];
       if (hash && validPages.includes(hash)) {
-        if (hash === 'admin' && !isAdminAuthenticated()) {
-          setActivePage('login');
-          window.location.hash = 'login';
-        } else {
-          setActivePage(hash);
-        }
+        setActivePage(hash);
       }
     };
     handleHashChange();
@@ -64,11 +48,6 @@ export default function App() {
 
   // Sync state page changes back to URL hashes for professional bookmarking
   const handlePageChange = (pageId: string) => {
-    if (pageId === 'admin' && !isAdminAuthenticated()) {
-      setActivePage('login');
-      window.location.hash = 'login';
-      return;
-    }
     setActivePage(pageId);
     window.location.hash = pageId;
   };
@@ -142,18 +121,6 @@ export default function App() {
         return <AboutView key="about-view" />;
       case 'contact':
         return <ContactView key="contact-view" />;
-      case 'admin':
-        if (!isAdminLoggedIn) {
-          setTimeout(() => handlePageChange('login'), 0);
-          return null;
-        }
-        return (
-          <AdminPanel 
-            key="admin-panel" 
-            onContentUpdated={() => setContentTrigger(prev => prev + 1)} 
-            onNavigateHome={() => handlePageChange('home')} 
-          />
-        );
       case 'login':
         return (
           <LoginView 
@@ -212,7 +179,6 @@ export default function App() {
         setActivePage={handlePageChange}
         cartItemsCount={cartItemsCount}
         onCartClick={() => setIsCartOpen(true)}
-        isAdminLoggedIn={isAdminLoggedIn}
         customerUser={customerUser}
       />
 
@@ -254,6 +220,9 @@ export default function App() {
           setIsCartOpen(false);
         }}
       />
+
+      {/* Floating WhatsApp Quick Action */}
+      <WhatsAppButton />
     </div>
   );
 }

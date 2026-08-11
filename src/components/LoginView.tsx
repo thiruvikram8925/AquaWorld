@@ -67,31 +67,20 @@ export const LoginView: React.FC<LoginViewProps> = ({ setActivePage, onShowToast
     e.preventDefault();
     setError('');
 
-    if (isTab === 'customer') {
-      if (!email.trim() || !email.trim().toLowerCase().endsWith('@gmail.com')) {
-        setError('Please enter a valid Gmail address ending with @gmail.com.');
-        return;
-      }
-
-      // Customer Login (No password required, no data stored)
-      const emailId = email.trim().toLowerCase();
-      const namePart = emailId.split('@')[0];
-      loginCustomer(namePart, emailId);
-      onShowToast(`Welcome, ${namePart}!`);
-      
-      // Reset form
-      setEmail('');
-      setError('');
-    } else {
-      // Admin Login
-      if (email === 'aquaworldsanthosh@gmail.com' && password === 'Santhoshkumar@123') {
-        loginAdmin();
-        onShowToast('Welcome back, Admin!');
-        setActivePage('admin');
-      } else {
-        setError('Invalid admin credentials. Please try again.');
-      }
+    if (!email.trim() || !email.trim().toLowerCase().endsWith('@gmail.com')) {
+      setError('Please enter a valid Gmail address ending with @gmail.com.');
+      return;
     }
+
+    // Customer Login
+    const emailId = email.trim().toLowerCase();
+    const namePart = emailId.split('@')[0];
+    loginCustomer(namePart, emailId);
+    onShowToast(`Welcome, ${namePart}!`);
+    
+    // Reset form
+    setEmail('');
+    setError('');
   };
 
   const handleProfileSave = (e: React.FormEvent) => {
@@ -315,100 +304,34 @@ export const LoginView: React.FC<LoginViewProps> = ({ setActivePage, onShowToast
               exit={{ opacity: 0, scale: 0.98 }}
               className="max-w-md mx-auto w-full bg-white/60 backdrop-blur-md rounded-2xl border border-white/40 shadow-xl shadow-blue-950/5 overflow-hidden"
             >
-              {/* Double Tab Selector */}
-              <div className="flex border-b border-slate-100 bg-slate-50/50">
-                <button
-                  onClick={() => {
-                    setIsTab('customer');
-                    setIsRegister(false);
-                    setError('');
-                  }}
-                  className={`flex-1 py-4 text-center text-xs font-bold uppercase tracking-wider transition-all cursor-pointer border-b-2 flex items-center justify-center gap-2 ${
-                    isTab === 'customer'
-                      ? 'border-[#00B4D8] text-[#023E8A] bg-white'
-                      : 'border-transparent text-slate-400 hover:text-[#023E8A]'
-                  }`}
-                >
-                  <User className="w-4 h-4" />
-                  <span>Customer Log In</span>
-                </button>
-                <button
-                  onClick={() => {
-                    setIsTab('admin');
-                    setIsRegister(false);
-                    setError('');
-                  }}
-                  className={`flex-1 py-4 text-center text-xs font-bold uppercase tracking-wider transition-all cursor-pointer border-b-2 flex items-center justify-center gap-2 ${
-                    isTab === 'admin'
-                      ? 'border-[#00B4D8] text-[#023E8A] bg-white'
-                      : 'border-transparent text-slate-400 hover:text-[#023E8A]'
-                  }`}
-                >
-                  <ShieldCheck className="w-4 h-4" />
-                  <span>Admin Sign In</span>
-                </button>
-              </div>
-
               {/* Form Content */}
               <div className="p-8">
                 <div className="text-center space-y-1 mb-6">
                   <h3 className="font-display font-extrabold text-lg text-[#023E8A] uppercase">
-                    {isTab === 'customer' 
-                      ? 'Customer Login'
-                      : 'Authorized Admin Sign In'
-                    }
+                    Customer Login
                   </h3>
                   <p className="font-sans text-xs text-slate-500">
-                    {isTab === 'customer'
-                      ? 'Enter your Gmail address to log in instantly'
-                      : 'Exclusive backend server command authentication'
-                    }
+                    Enter your Gmail address to log in instantly
                   </p>
                 </div>
 
                 <form onSubmit={handleLoginSubmit} className="space-y-4">
                   <div className="space-y-1.5">
                     <label className="block text-[11px] font-bold uppercase text-[#023E8A] tracking-wider">
-                      {isTab === 'admin' ? 'Admin Username (Email)' : 'Gmail Address'}
+                      Gmail Address
                     </label>
                     <div className="relative">
                       <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-400" />
                       <input
                         type="email"
                         required
-                        placeholder={isTab === 'admin' ? 'admin@aquaworld.com' : 'e.g. customer@gmail.com'}
+                        placeholder="e.g. customer@gmail.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         className="w-full pl-11 pr-4 py-2.5 rounded-xl bg-white border border-slate-200 text-xs text-[#023E8A] focus:outline-none focus:ring-1 focus:ring-[#00B4D8]"
                       />
                     </div>
                   </div>
-
-                  {isTab === 'admin' && (
-                    <div className="space-y-1.5">
-                      <label className="block text-[11px] font-bold uppercase text-[#023E8A] tracking-wider">
-                        Security Password
-                      </label>
-                      <div className="relative">
-                        <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-400" />
-                        <input
-                          type={showPassword ? 'text' : 'password'}
-                          required
-                          placeholder="••••••••••••"
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          className="w-full pl-11 pr-11 py-2.5 rounded-xl bg-white border border-slate-200 text-xs text-[#023E8A] focus:outline-none focus:ring-1 focus:ring-[#00B4D8]"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#00B4D8] cursor-pointer"
-                        >
-                          {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                        </button>
-                      </div>
-                    </div>
-                  )}
 
                   {error && (
                     <div className="p-3 rounded-xl bg-red-50 border border-red-100 flex items-start gap-2.5 text-red-600 text-xs font-semibold">
@@ -421,24 +344,16 @@ export const LoginView: React.FC<LoginViewProps> = ({ setActivePage, onShowToast
                     type="submit"
                     className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-[#023E8A] to-[#00B4D8] text-white text-xs font-bold uppercase tracking-wider transition-all hover:shadow-lg hover:shadow-blue-200 hover:-translate-y-0.5 cursor-pointer"
                   >
-                    <span>{isTab === 'admin' ? 'Verify Admin Access' : 'Login via Gmail'}</span>
+                    <span>Login via Gmail</span>
                     <ArrowRight className="w-4 h-4" />
                   </button>
                 </form>
 
-
-
                 {/* Helpful Hints */}
                 <div className="mt-6 p-4 rounded-xl bg-blue-50/30 border border-blue-50 text-[10px] text-slate-500 leading-normal font-sans">
-                  {isTab === 'customer' ? (
-                    <div className="text-center space-y-1">
-                      <p>✨ <strong>Customer Access:</strong> Simply enter your Gmail address to securely access your profile instantly.</p>
-                    </div>
-                  ) : (
-                    <div className="text-center space-y-1">
-                      <p>🔒 <strong>Authorized Access Only:</strong> This panel is restricted to system administrators. Please sign in with your security keys.</p>
-                    </div>
-                  )}
+                  <div className="text-center space-y-1">
+                    <p>✨ <strong>Customer Access:</strong> Simply enter your Gmail address to securely access your profile instantly.</p>
+                  </div>
                 </div>
               </div>
             </motion.div>

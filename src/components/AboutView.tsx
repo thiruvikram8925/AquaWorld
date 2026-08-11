@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Sparkles, Target, Eye, ShieldCheck, Award, HeartPulse, 
   Leaf, CheckCircle2 
@@ -7,7 +7,16 @@ import { motion } from 'motion/react';
 import { getAdminContent } from '../lib/adminState';
 
 export const AboutView: React.FC = () => {
-  const content = getAdminContent();
+  const [content, setContent] = useState(getAdminContent());
+
+  useEffect(() => {
+    fetch('/api/content')
+      .then(res => res.json())
+      .then(data => {
+        if (data && typeof data === 'object') setContent(prev => ({ ...prev, ...data }));
+      })
+      .catch(console.error);
+  }, []);
 
   return (
     <div className="bg-transparent py-4 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">

@@ -39,7 +39,7 @@ const DEFAULT_CONTENT: WebsiteContent = {
   aboutSummaryTitle: 'Pure Water. Healthier Communities.',
   aboutSummaryText1: 'At AQUA WORLD, we believe safe drinking water is a fundamental human necessity. As a leading manufacturer and supplier of luxury water purifiers, Reverse Osmosis (RO) plants, and advanced filtration configurations, we provide bespoke, scientific treatment units catering to varying local water TDS parameters.',
   aboutSummaryText2: 'Our patented, multi-membrane process effectively rejects heavy toxic metals, organic chemical solvents, and microbiological pathogens, while carefully infusing life-enriching calcium, active copper, and magnesium minerals. We serve thousands of happy residential kitchens, modern executive offices, and critical industrial sectors.',
-  contactHelpline: '+1800-419-1200',
+  contactHelpline: '9788545519',
   contactEmail: 'support@aquaworld.com',
   contactAddress: 'Aqua World Tower, Sector-62, Noida, UP, India',
   contactHours: 'Monday - Saturday: 09:00 AM - 07:00 PM',
@@ -138,44 +138,11 @@ export const addLoginLog = (userName: string, emailId: string) => {
   return updatedLogs;
 };
 
-// 5. Admin Authentication State Management
-export const isAdminAuthenticated = (): boolean => {
-  const authState = localStorage.getItem('aq_admin_auth');
-  if (authState === 'true') {
-    // Check if session has timed out (auto logout after 15 minutes of inactivity)
-    const lastActivity = localStorage.getItem('aq_admin_last_activity');
-    if (lastActivity) {
-      const elapsed = Date.now() - parseInt(lastActivity, 10);
-      const limit = 15 * 60 * 1000; // 15 minutes in milliseconds
-      if (elapsed > limit) {
-        logoutAdmin();
-        return false;
-      }
-    }
-    // Update last activity to extend session
-    updateAdminActivity();
-    return true;
-  }
-  return false;
-};
-
-export const loginAdmin = (): boolean => {
-  logoutCustomer(); // Log out customer when admin logs in
-  localStorage.setItem('aq_admin_auth', 'true');
-  updateAdminActivity();
-  window.dispatchEvent(new Event('admin-auth-change'));
-  return true;
-};
-
-export const logoutAdmin = () => {
-  localStorage.removeItem('aq_admin_auth');
-  localStorage.removeItem('aq_admin_last_activity');
-  window.dispatchEvent(new Event('admin-auth-change'));
-};
-
-export const updateAdminActivity = () => {
-  localStorage.setItem('aq_admin_last_activity', Date.now().toString());
-};
+// 5. Admin Authentication State Management (Moved to Backend Server)
+export const isAdminAuthenticated = (): boolean => false;
+export const loginAdmin = (): boolean => false;
+export const logoutAdmin = () => {};
+export const updateAdminActivity = () => {};
 
 // 6. Customer Authentication & Profile Management
 export interface CustomerUser {
@@ -197,7 +164,6 @@ export const getCustomerUser = (): CustomerUser | null => {
 };
 
 export const loginCustomer = (name: string, email: string): CustomerUser => {
-  logoutAdmin(); // Log out admin when customer logs in
   const newUser: CustomerUser = {
     name,
     email,

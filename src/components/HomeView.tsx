@@ -22,11 +22,29 @@ export const HomeView: React.FC<HomeViewProps> = ({
   onQuickView,
   onFilterByCategory,
 }) => {
-  // Select 6 products to feature
-  const dynamicProducts = getAdminProducts().filter((p) => (p as any).isEnabled !== false);
+  // Dynamic Products and Content State (Live Sync from Backend API)
+  const [productsList, setProductsList] = useState<Product[]>(getAdminProducts());
+  const [content, setContent] = useState(getAdminContent());
+
+  useEffect(() => {
+    fetch('/api/products')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data) && data.length > 0) setProductsList(data);
+      })
+      .catch(console.error);
+
+    fetch('/api/content')
+      .then(res => res.json())
+      .then(data => {
+        if (data && typeof data === 'object') setContent(prev => ({ ...prev, ...data }));
+      })
+      .catch(console.error);
+  }, []);
+
+  const dynamicProducts = productsList.filter((p) => (p as any).isEnabled !== false);
   const featuredProducts = dynamicProducts.slice(0, 6);
   const categoriesList = getAdminCategories();
-  const content = getAdminContent();
 
   // Stats Counters state for animation
   const [stats, setStats] = useState({ clients: 0, purity: 0, saving: 0, locations: 0 });
