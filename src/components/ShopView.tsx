@@ -27,7 +27,7 @@ export const ShopView: React.FC<ShopViewProps> = ({
     fetch('/api/products')
       .then(res => res.json())
       .then(data => {
-        if (Array.isArray(data) && data.length > 0) {
+        if (Array.isArray(data)) {
           setProductsList(data);
         }
       })

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Logo } from './Logo';
 import { Facebook, Instagram, Linkedin, Twitter, Youtube, Send, CheckCircle2 } from 'lucide-react';
 import { getAdminContent } from '../lib/adminState';
@@ -8,7 +8,17 @@ interface FooterProps {
 }
 
 export const Footer: React.FC<FooterProps> = ({ setActivePage }) => {
-  const content = getAdminContent();
+  const [content, setContent] = useState(getAdminContent());
+
+  useEffect(() => {
+    fetch('/api/content')
+      .then(res => res.json())
+      .then(data => {
+        if (data && typeof data === 'object') setContent(prev => ({ ...prev, ...data }));
+      })
+      .catch(console.error);
+  }, []);
+
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
   const [activeModal, setActiveModal] = useState<string | null>(null);

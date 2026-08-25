@@ -1,5 +1,5 @@
 import { Product, Category } from '../types';
-import database from '../database.json';
+import { PRODUCTS, CATEGORIES } from '../data';
 
 // Define Website Content Interface
 export interface WebsiteContent {
@@ -71,53 +71,29 @@ const getOrSetLocal = <T>(key: string, defaultValue: T): T => {
 
 // 1. Get and Save Products
 export const getAdminProducts = (): Product[] => {
-  const products = (database.products as Product[]) || [];
-  let modified = false;
-  const verified = products.map(p => {
-    if ((p as any).isEnabled === undefined) {
-      modified = true;
-      return { ...p, isEnabled: true };
-    }
-    return p;
-  });
-  if (modified) {
-    saveAdminProducts(verified);
-  }
-  return verified;
+  return PRODUCTS;
 };
 
 export const saveAdminProducts = (products: Product[]) => {
-  fetch('/api/save', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ products })
-  }).catch(console.error);
+  // Legacy save disabled
 };
 
 // 2. Get and Save Categories
 export const getAdminCategories = (): Category[] => {
-  return (database.categories as Category[]) || [];
+  return CATEGORIES;
 };
 
 export const saveAdminCategories = (categories: Category[]) => {
-  fetch('/api/save', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ categories })
-  }).catch(console.error);
+  // Legacy save disabled
 };
 
 // 3. Get and Save Web Content
 export const getAdminContent = (): WebsiteContent => {
-  return (database.content as WebsiteContent) || DEFAULT_CONTENT;
+  return DEFAULT_CONTENT;
 };
 
 export const saveAdminContent = (content: WebsiteContent) => {
-  fetch('/api/save', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ content })
-  }).catch(console.error);
+  // Legacy save disabled
 };
 
 // 4. Get and Save Login Logs
