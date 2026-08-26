@@ -126,7 +126,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
         <div className="max-w-7xl mx-auto w-full relative z-10">
           {/* Hero Left Content */}
-          <div className="max-w-2xl space-y-6 text-left">
+          <div className="max-w-lg space-y-6 text-left">
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -151,7 +151,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="font-sans text-base sm:text-lg text-[#023E8A]/80 max-w-2xl leading-relaxed font-medium"
+              className="font-sans text-base sm:text-lg text-[#023E8A]/80 max-w-md leading-relaxed font-medium"
             >
               {content.heroDesc}
             </motion.p>
